@@ -35,8 +35,13 @@ void ParseArgs(int argc, char *argv[], Args *args) {
 
     // Resolution.
     for (int i = 1; i < argc; i++) {
-        if (strncmp(argv[i], "--r", 3) == 0) {
-            char *res = argv[i] + 3;
+        int len = strlen(argv[i]);
+        char *lower = new char[len + 1];  // +1 for null character.
+        for (int j = 0; j < len; j++) lower[j] = tolower(argv[i][j]);
+        lower[len] = '\0';
+
+        if (strncmp(lower, "/r", 2) == 0) {
+            char *res = lower + 2;
             char *w = res;
             char *h = strchr(res, 'x');
             h[0] = '\0';
@@ -56,7 +61,12 @@ void ParseArgs(int argc, char *argv[], Args *args) {
     for (int i = 1; i < argc; i++) {
         if (checked[i]) continue;
 
-        if (strcmp(argv[i], "--win10") == 0) {
+        int len = strlen(argv[i]);
+        char *lower = new char[len + 1];  // +1 for null character.
+        for (int j = 0; j < len; j++) lower[j] = tolower(argv[i][j]);
+        lower[len] = '\0';
+
+        if (strcmp(lower, "/win10") == 0) {
             args->wLeft = 8;
             args->wRight = 8;
             args->wTop = 51;
@@ -65,7 +75,7 @@ void ParseArgs(int argc, char *argv[], Args *args) {
 
             checked[i] = true;
             break;
-        } else if (strcmp(argv[i], "--win11") == 0) {
+        } else if (strcmp(lower, "/win11") == 0) {
             args->wLeft = 8;
             args->wRight = 8;
             args->wTop = 51;
@@ -81,33 +91,38 @@ void ParseArgs(int argc, char *argv[], Args *args) {
     for (int i = 1; i < argc; i++) {
         if (checked[i]) continue;
 
+        int len = strlen(argv[i]);
+        char *lower = new char[len + 1];  // +1 for null character.
+        for (int j = 0; j < len; j++) lower[j] = tolower(argv[i][j]);
+        lower[len] = '\0';
+
         // Window borders.
-        if (strncmp(argv[i], "--wl", 4) == 0) {
-            args->wLeft = atoi(argv[i] + 4);
+        if (strncmp(lower, "/wl", 3) == 0) {
+            args->wLeft = atoi(lower + 3);
             checked[i] = true;
-        } else if (strncmp(argv[i], "--wr", 4) == 0) {
-            args->wRight = atoi(argv[i] + 4);
+        } else if (strncmp(lower, "/wr", 3) == 0) {
+            args->wRight = atoi(lower + 3);
             checked[i] = true;
-        } else if (strncmp(argv[i], "--wt", 4) == 0) {
-            args->wTop = atoi(argv[i] + 4);
+        } else if (strncmp(lower, "/wt", 3) == 0) {
+            args->wTop = atoi(lower + 3);
             checked[i] = true;
-        } else if (strncmp(argv[i], "--wb", 4) == 0) {
-            args->wBottom = atoi(argv[i] + 4);
+        } else if (strncmp(lower, "/wb", 3) == 0) {
+            args->wBottom = atoi(lower + 3);
             checked[i] = true;
         }
 
         // Display area.
-        if (strncmp(argv[i], "--dl", 4) == 0) {
-            args->dLeft = atoi(argv[i] + 4);
+        if (strncmp(lower, "/dl", 3) == 0) {
+            args->dLeft = atoi(lower + 3);
             checked[i] = true;
-        } else if (strncmp(argv[i], "--dr", 4) == 0) {
-            args->dRight = atoi(argv[i] + 4);
+        } else if (strncmp(lower, "/dr", 3) == 0) {
+            args->dRight = atoi(lower + 3);
             checked[i] = true;
-        } else if (strncmp(argv[i], "--dt", 4) == 0) {
-            args->dTop = atoi(argv[i] + 4);
+        } else if (strncmp(lower, "/dt", 3) == 0) {
+            args->dTop = atoi(lower + 3);
             checked[i] = true;
-        } else if (strncmp(argv[i], "--db", 4) == 0) {
-            args->dBottom = atoi(argv[i] + 4);
+        } else if (strncmp(lower, "/db", 3) == 0) {
+            args->dBottom = atoi(lower + 3);
             checked[i] = true;
         }
     }
@@ -116,7 +131,12 @@ void ParseArgs(int argc, char *argv[], Args *args) {
     for (int i = 1; i < argc; i++) {
         if (checked[i]) continue;
 
-        if (strncmp(argv[i], "--r", 3) != 0 && strcmp(argv[i], "win10") != 0 && strcmp(argv[i], "win11") != 0) {
+        int len = strlen(argv[i]);
+        char *lower = new char[len + 1];  // +1 for null character.
+        for (int j = 0; j < len; j++) lower[j] = tolower(argv[i][j]);
+        lower[len] = '\0';
+
+        if (strncmp(lower, "/r", 2) != 0 && strcmp(lower, "/win10") != 0 && strcmp(lower, "/win11") != 0) {
             args->path = argv[i];
             break;
         }
