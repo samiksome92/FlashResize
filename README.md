@@ -1,6 +1,6 @@
 # Flash Resize
 
-A program which starts a standalone flashplayer instance and resizes it to fill the screen. Relies on `flashplayer.exe` being in `%PATH%`. At the very least the screen resolution and the OS need to be specified using arguments. Arguments are also available for custom setups where window borders and display are may vary from the default configurations.
+A program which resizes a standalone flashplayer instance to fill the screen. If no path argument is provided, it checks for a running instance of `Adobe Flash Player 32` and resizes it. Otherwise a new flashplayer instance is started and subsequently resized. Relies on flashplayer.exe being in %PATH% for starting a new instance. At the very least the screen resolution and the OS need to be specified using arguments. Arguments are also available for custom setups where window borders and display are may vary from the default configurations.
 
 ## Compilation
 Compile using `cl` along with `user32.lib` as follows:
@@ -8,23 +8,25 @@ Compile using `cl` along with `user32.lib` as follows:
     cl /O2 /FoFlashResize.obj /FeFlashResize.exe FlashResize.cpp user32.lib
 
 ## Usage
-The program supports the following arguments.
+    FlashResize [/R<width>x<height>] [/WIN10 | /WIN11] [/WL<num>] [/WR<num>] [/WT<num>] [/WB<num>]
+                [/DL<num>] [/DR<num>] [/DT<num>] [/DB<num>] [path]
 
-    /R<width>x<height>    Sets screen resolution. For example `/R1920x1080`
+    /R<width>x<height>
+                Sets screen resolution. For example `/R1920x1080`
 
-    /WIN10                Sets dimensions for default Windows 10
-    /WIN11                Sets dimensions for default Windows 11
-    
-    /WL<num>              Window left border
-    /WR<num>              Window right border
-    /WT<num>              Window top border
-    /WB<num>              Window bottom border
-    /DL<num>              Display left
-    /DR<num>              Display right
-    /DT<num>              Display top
-    /DB<num>              Display bottom
-    
-    <path>                 File path
+    /WIN10      Sets dimensions for default Windows 10
+    /WIN11      Sets dimensions for default Windows 11
+
+    /WL<num>    Window left border
+    /WR<num>    Window right border
+    /WT<num>    Window top border
+    /WB<num>    Window bottom border
+    /DL<num>    Display left
+    /DR<num>    Display right
+    /DT<num>    Display top
+    /DB<num>    Display bottom
+
+    path        File path
 
 The resolution and OS arguments set the default window borders and display area. For example `/R1920x1080 /WIN11` sets window borders as 8, 8, 51, 8 (left, right, top and bottom), since those are the default sizes of the border around the flash content window in Windows 11. For left, right and bottom it is 1 pixel visible window border and 7 pixels invisible resize border. For top, it is 1 pixel border and 50 pixels titlebar and menubar. The display area is set as 0, 1920, 0, 1032 (left, right, top, bottom). Bottom is 1032 instead of 1080 to account for the 48 pixel taskbar.
 

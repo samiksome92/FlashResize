@@ -1,11 +1,37 @@
 /**
- * A program which starts a standalone flashplayer instance and resizes it to fill the screen. Relies on flashplayer.exe
- * being in %PATH%. At the very least the screen resolution and the OS need to be specified using arguments. Arguments
- * are also available for custom setups where window borders and display are may vary from the default configurations.
+ * A program which resizes a standalone flashplayer instance to fill the screen. If no path argument is provided, it
+ * checks for a running instance of `Adobe Flash Player 32` and resizes it. Otherwise a new flashplayer instance is
+ * started and subsequently resized. Relies on flashplayer.exe being in %PATH% for starting a new instance. At the very
+ * least the screen resolution and the OS need to be specified using arguments. Arguments are also available for custom
+ * setups where window borders and display are may vary from the default configurations.
  */
 
+#include <Windows.h>
 #include <stdio.h>
-#include <windows.h>
+
+void PrintHelp() {
+    /**
+     * Print help and exit.
+     */
+    printf("Resizes a standalone flashplayer instance.\n\n");
+    printf("FlashResize [/R<width>x<height>] [/WIN10 | /WIN11] [/WL<num>] [/WR<num>] [/WT<num>] [/WB<num>]\n");
+    printf("            [/DL<num>] [/DR<num>] [/DT<num>] [/DB<num>] [path]\n\n");
+    printf("  /R<width>x<height>\n");
+    printf("              Sets screen resolution. For example /R1920x1080\n\n");
+    printf("  /WIN10      Sets dimensions for default Windows 10\n");
+    printf("  /WIN11      Sets dimensions for default Windows 11\n\n");
+    printf("  /WL<num>    Window left border\n");
+    printf("  /WR<num>    Window right border\n");
+    printf("  /WT<num>    Window top border\n");
+    printf("  /WB<num>    Window bottom border\n");
+    printf("  /DL<num>    Display left\n");
+    printf("  /DR<num>    Display right\n");
+    printf("  /DT<num>    Display top\n");
+    printf("  /DB<num>    Display bottom\n\n");
+    printf("  path        File path\n\n");
+
+    exit(EXIT_SUCCESS);
+}
 
 struct Args {
     /**
@@ -127,7 +153,14 @@ void ParseArgs(int argc, char *argv[], Args *args) {
         }
     }
 
-    // File path
+    // Help.
+    for (int i = 1; i < argc; i++) {
+        if (checked[i]) continue;
+
+        if (strcmp(argv[i], "/?") == 0) PrintHelp();
+    }
+
+    // File path.
     for (int i = 1; i < argc; i++) {
         if (checked[i]) continue;
 
@@ -175,23 +208,14 @@ BOOL CALLBACK GetWindowHandle(HWND hwnd, LPARAM lParam) {
     return TRUE;
 }
 
-int main(int argc, char *argv[]) {
+HWND StartFlash(Args *args) {
     /**
-     * The main function.
+     * Start flashplayer.exe with provided path and return window handle.
      *
-     * @param int Number of command line arguments.
-     * @param char* Command line arguments.
+     * @param args Parsed arguments.
      *
-     * @return Exit status.
+     * @return Window handle.
      */
-    // Parse arguments and make sure path is specified.
-    Args *args = new Args();
-    ParseArgs(argc, argv, args);
-    if (args->path == nullptr) {
-        fprintf(stderr, "Must provide a file path.");
-        return EXIT_FAILURE;
-    }
-
     // Convert argument from char* to LPWSTR.
     char *exe = "flashplayer.exe";
     size_t lenExe = strlen(exe);
@@ -219,7 +243,7 @@ int main(int argc, char *argv[]) {
     // Create process.
     if (!CreateProcessW(NULL, cl, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
         fprintf(stderr, "CreateProcessW failed (%ld).\n", GetLastError());
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
     // Sleep for 1s so that window is properly initialized.
@@ -230,6 +254,32 @@ int main(int argc, char *argv[]) {
     EnumWindows(&GetWindowHandle, reinterpret_cast<LPARAM>(&lParam));
     HWND hwnd = FindWindowExW(lParam->hwnd, NULL, NULL, L"Adobe Flash Player 32");
 
+    // Clean up.
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+
+    return hwnd;
+}
+
+int main(int argc, char *argv[]) {
+    /**
+     * The main function.
+     *
+     * @param int Number of command line arguments.
+     * @param char* Command line arguments.
+     *
+     * @return Exit status.
+     */
+    // Parse arguments and make sure path is specified.
+    Args *args = new Args();
+    ParseArgs(argc, argv, args);
+
+    HWND hwnd = NULL;
+    if (args->path == nullptr) {
+        hwnd = FindWindowW(NULL, L"Adobe Flash Player 32");
+    } else {
+        hwnd = StartFlash(args);
+    }
     if (hwnd == NULL) {
         fprintf(stderr, "Could not find window.\n");
         return EXIT_FAILURE;
@@ -262,10 +312,6 @@ int main(int argc, char *argv[]) {
 
     SetWindowPos(hwnd, HWND_TOP, args->dLeft + w_offset, args->dTop + h_offset, nw + args->wLeft + args->wRight,
                  nh + args->wTop + args->wBottom, 0);
-
-    // Clean up.
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
 
     return EXIT_SUCCESS;
 }
